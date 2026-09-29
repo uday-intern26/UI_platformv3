@@ -1,0 +1,403 @@
+openapi: 3.1.0
+info:
+  title: AIJewel Customer Onboarding API
+  version: 0.1.0
+  description: |
+    Retailer registration, plan selection, branch setup, kiosk provisioning,
+    catalogue import hooks, integration setup, validation and tenant activation.
+    Belongs under Enterprise Administration. Durable onboarding state machine;
+    prevents duplicate tenant activation.
+servers:
+  - url: http://127.0.0.1:5003
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Onboarding
+  - name: Health
+paths:
+  /health:
+    get:
+      operationId: onboardingHealth
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: Service healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  service: { type: string }
+  /v1/onboarding/applications:
+    post:
+      operationId: createOnboardingApplication
+      tags: [Onboarding]
+      summary: Create onboarding application
+      description: |
+        Creates a draft onboarding application with default activation checklist.
+        Permission: onboarding:write. Tenant not yet assigned until activation.
+      parameters:
+        - $ref: "../shared/common.yaml#/components/parameters/CorrelationId"
+      responses:
+        "201":
+          description: Application created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+              example:
+                applicationId: onb_123
+                status: draft
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    get:
+      operationId: listOnboardingApplications
+      tags: [Onboarding]
+      summary: List onboarding applications
+      description: Permission onboarding:read.
+      responses:
+        "200":
+          description: Application list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}:
+    get:
+      operationId: getOnboardingApplication
+      tags: [Onboarding]
+      summary: Get onboarding application
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Application
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /v1/onboarding/applications/{applicationId}/business:
+    patch:
+      operationId: updateOnboardingBusiness
+      tags: [Onboarding]
+      summary: Update business profile
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BusinessProfile"
+            example:
+              legalName: Sharma Jewellers Pvt Ltd
+              country: IN
+              contactEmail: admin@sharma.example
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/plan:
+    post:
+      operationId: selectOnboardingPlan
+      tags: [Onboarding]
+      summary: Select subscription plan
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [planId]
+              properties:
+                planId: { type: string }
+      responses:
+        "200":
+          description: Plan selected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/branches:
+    post:
+      operationId: addOnboardingBranch
+      tags: [Onboarding]
+      summary: Add initial branch
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                city: { type: string }
+                code: { type: string }
+      responses:
+        "200":
+          description: Branch added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/admin-invitation:
+    post:
+      operationId: inviteOnboardingAdmin
+      tags: [Onboarding]
+      summary: Invite tenant administrator
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+      responses:
+        "200":
+          description: Invitation recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/kiosks:
+    post:
+      operationId: provisionOnboardingKiosk
+      tags: [Onboarding]
+      summary: Provision kiosk
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [label]
+              properties:
+                label: { type: string }
+                branchId: { type: string }
+      responses:
+        "200":
+          description: Kiosk provisioned
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/catalogue-import:
+    post:
+      operationId: attachCatalogueImport
+      tags: [Onboarding]
+      summary: Attach catalogue import reference
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [catalogueImportId]
+              properties:
+                catalogueImportId: { type: string }
+      responses:
+        "200":
+          description: Import attached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/integrations:
+    post:
+      operationId: attachOnboardingIntegration
+      tags: [Onboarding]
+      summary: Attach integration
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [integrationId]
+              properties:
+                integrationId: { type: string }
+      responses:
+        "200":
+          description: Integration attached
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+  /v1/onboarding/applications/{applicationId}/progress:
+    get:
+      operationId: getOnboardingProgress
+      tags: [Onboarding]
+      summary: Get activation checklist progress
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingProgress"
+  /v1/onboarding/applications/{applicationId}/validate:
+    post:
+      operationId: validateOnboardingApplication
+      tags: [Onboarding]
+      summary: Validate onboarding checklist
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+      responses:
+        "200":
+          description: Validated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+  /v1/onboarding/applications/{applicationId}/activate:
+    post:
+      operationId: activateOnboardingTenant
+      tags: [Onboarding]
+      summary: Activate tenant
+      description: |
+        Activates tenant after validation. Emits tenant.activated.v1.
+        Prevents duplicate activation. Permission onboarding:activate.
+      parameters:
+        - $ref: "#/components/parameters/ApplicationId"
+        - $ref: "../shared/common.yaml#/components/parameters/CorrelationId"
+        - $ref: "../shared/common.yaml#/components/parameters/IdempotencyKey"
+      responses:
+        "200":
+          description: Tenant activated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OnboardingApplication"
+        "409":
+          $ref: "#/components/responses/Conflict"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    ApplicationId:
+      name: applicationId
+      in: path
+      required: true
+      schema:
+        type: string
+  schemas:
+    BusinessProfile:
+      type: object
+      required: [legalName, country, contactEmail]
+      properties:
+        legalName: { type: string }
+        tradeName: { type: string }
+        gstin: { type: string }
+        country: { type: string, minLength: 2 }
+        region: { type: string }
+        contactEmail: { type: string, format: email }
+        contactPhone: { type: string }
+    OnboardingApplication:
+      type: object
+      required: [applicationId, status, createdAt, updatedAt]
+      properties:
+        applicationId: { type: string }
+        tenantId: { type: string }
+        status:
+          type: string
+          enum: [draft, in_progress, pending_validation, validated, activated, rejected]
+        business:
+          $ref: "#/components/schemas/BusinessProfile"
+        planId: { type: string }
+        branches:
+          type: array
+          items:
+            type: object
+            properties:
+              branchId: { type: string }
+              name: { type: string }
+              city: { type: string }
+              code: { type: string }
+        checklist:
+          type: array
+          items:
+            type: object
+            properties:
+              key: { type: string }
+              label: { type: string }
+              completed: { type: boolean }
+        activatedAt: { type: string, format: date-time }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    OnboardingProgress:
+      type: object
+      properties:
+        applicationId: { type: string }
+        status: { type: string }
+        completedSteps: { type: integer }
+        totalSteps: { type: integer }
+        percentComplete: { type: integer }
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: "../shared/common.yaml#/components/schemas/ErrorResponse"
+    Forbidden:
+      description: Permission denied
+      content:
+        application/json:
+          schema:
+            $ref: "../shared/common.yaml#/components/schemas/ErrorResponse"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "../shared/common.yaml#/components/schemas/ErrorResponse"
+    Conflict:
+      description: State conflict
+      content:
+        application/json:
+          schema:
+            $ref: "../shared/common.yaml#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: Validation error
+      content:
+        application/json:
+          schema:
+            $ref: "../shared/common.yaml#/components/schemas/ErrorResponse"

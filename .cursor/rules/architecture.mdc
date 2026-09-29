@@ -1,0 +1,22 @@
+---
+description: AIJewel architecture rules — multi-tenant, API-first microservices
+globs:
+alwaysApply: true
+---
+
+# Architecture
+
+- Independently deployable, loosely coupled microservices.
+- Each service owns its domain logic and database. No cross-service DB reads.
+- Versioned REST APIs for sync; versioned domain events for async.
+- Layers: API → Application → Domain → Infrastructure.
+- Dependency injection for DB, model providers, storage, auth, events.
+- Multi-tenancy, branch-level access, RBAC, resource-level auth.
+- Idempotency, structured logging, distributed tracing, audit events.
+- Health checks, API versioning, usage metering.
+- Every public endpoint has an OpenAPI 3.1 contract under `contracts/openapi`.
+- Every inter-service event has an AsyncAPI / JSON Schema under `contracts/`.
+- Exclude: AI Sales Agent & CRM, Marketing Automation.
+- Customer Onboarding and SaaS Pricing belong under Enterprise Administration.
+- Local-first; no AWS credentials required for development.
+- Preserve Lambda-compatible handlers and infrastructure adapters for future AWS.

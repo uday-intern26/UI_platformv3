@@ -1,0 +1,19 @@
+---
+description: Node.js / Fastify / TypeScript service conventions
+globs:
+  - "services/**/*.ts"
+  - "packages/shared-node/**/*.ts"
+alwaysApply: false
+---
+
+# Node.js Services
+
+- Runtime: Node.js 22+, TypeScript, Fastify.
+- Package manager: pnpm workspaces.
+- Structure: `src/api`, `src/application`, `src/domain`, `src/infrastructure`.
+- Use dependency injection; no hardcoded AWS clients in domain/application.
+- Vitest for unit/integration tests.
+- Export OpenAPI from Fastify or sync with YAML contracts in `contracts/openapi`.
+- Local JWT auth first; Cognito adapter behind an interface.
+- Decimal-safe money via string/decimal libraries — never floating point for INR/USD jewellery pricing.
+- Ports: BFF 3001, admin 5001–5008, Node business services 4001+.

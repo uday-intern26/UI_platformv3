@@ -1,0 +1,16 @@
+---
+description: Testing standards for AIJewel services
+globs:
+  - "**/*test*"
+  - "tests/**"
+alwaysApply: false
+---
+
+# Testing
+
+- Vitest for Node; pytest for Python.
+- Required: unit, integration, OpenAPI contract, event schema, auth, RBAC,
+  tenant-isolation, idempotency, failure-recovery, e2e.
+- Mandatory e2e: onboarding → catalogue → try-on → recommendations → analytics → dashboard.
+- Explicitly mark mocked AI inference; never claim mock as real.
+- Acceptance requires local startup without AWS credentials.

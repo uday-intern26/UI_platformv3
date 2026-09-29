@@ -1,0 +1,42 @@
+# AIJewel Enterprise AI Platform — Local Ports
+# Do not require AWS credentials for local development.
+
+nextjs: 3000
+dashboard_bff: 3001
+
+business:
+  virtual_tryon: 4001
+  recommendation_engine: 4002
+  inventory_intelligence: 4003
+  jewellery_design: 4004
+  catalogue_factory: 4005
+  retail_analytics: 4006
+  visual_search: 4007
+  pricing_procurement: 4008
+
+administration:
+  organization_service: 5001
+  identity_access: 5002
+  customer_onboarding: 5003
+  integrations: 5004
+  subscription_billing: 5005
+  saas_pricing: 5006
+  audit_service: 5007
+  platform_settings: 5008
+
+platform:
+  model_gateway: 8101
+  model_registry: 8102
+  agent_runtime: 8103
+  rag_service: 8104
+  prompt_registry: 8105
+  mcp_tool_gateway: 8106
+  workflow_orchestration: 8107
+  observability_evaluation: 8108
+  security_governance: 8109
+
+infrastructure:
+  dynamodb_local: 8000
+  localstack_s3: 4566
+  chroma: 8001
+  event_bus: 8090

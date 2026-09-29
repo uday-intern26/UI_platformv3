@@ -1,0 +1,18 @@
+---
+description: Python FastAPI microservice conventions
+globs:
+  - "services/**/*.py"
+  - "packages/shared-python/**/*.py"
+alwaysApply: false
+---
+
+# Python / FastAPI
+
+- Python 3.12+ (local may use 3.13 if 3.12 unavailable). Independent `.venv` per service.
+- Never install AI deps globally. Use `requirements.txt` or `pyproject.toml` per service.
+- Structure: `app/api`, `app/application`, `app/domain`, `app/infrastructure`.
+- Uvicorn for local; separate Lambda handler module for future AWS.
+- pytest for tests; OpenAPI 3.1 contracts aligned with FastAPI routes.
+- Mock providers by default for Model Gateway / vision / embeddings.
+- Do not log raw camera feeds, API keys, or PII photographs.
+- Ports: platform services 8101–8109; Python business services as assigned.

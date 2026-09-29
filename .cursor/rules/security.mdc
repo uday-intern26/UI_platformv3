@@ -1,0 +1,17 @@
+---
+description: Security and governance requirements
+globs:
+alwaysApply: true
+---
+
+# Security
+
+- Never put credentials or secrets in source code.
+- Local JWT for development; Cognito adapter for future AWS.
+- Tenant isolation and branch-level authorization on every request.
+- Deny-by-default governance policies.
+- Append-only audit logs; ordinary users cannot modify them.
+- Secure file uploads; no default retention of raw camera feeds.
+- Prompt-injection defenses for agent/tool paths.
+- Do not log passwords, API keys, or sensitive personal data.
+- Settings APIs must not expose secrets.

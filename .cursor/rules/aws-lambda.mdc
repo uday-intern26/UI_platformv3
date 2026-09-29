@@ -1,0 +1,17 @@
+---
+description: Future AWS Lambda deployment rules
+globs:
+  - "infrastructure/cdk/**"
+  - "**/handler*.py"
+  - "**/lambda*.ts"
+alwaysApply: false
+---
+
+# AWS Lambda (Future)
+
+- Do not deploy to AWS during initial implementation.
+- Each microservice independently deployable via CDK v2.
+- Separate app entry points and Lambda handlers.
+- Do not package Windows `.venv` for Lambda; build Linux artifacts.
+- Heavy GPU workloads use external inference; Lambda orchestrates.
+- Adapters: DynamoDB, S3, EventBridge, SQS, Step Functions, Cognito, Bedrock, Secrets Manager.

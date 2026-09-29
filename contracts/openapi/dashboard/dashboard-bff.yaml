@@ -1,0 +1,130 @@
+openapi: 3.1.0
+info:
+  title: AIJewel Dashboard BFF API
+  version: 0.1.0
+  description: |
+    Backend-for-frontend for the existing Next.js dashboard.
+    Module counts derive from approved catalogue and live entitlements —
+    production metrics are never hardcoded.
+servers:
+  - url: http://127.0.0.1:3001
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Dashboard
+  - name: Search
+  - name: Health
+paths:
+  /health:
+    get:
+      operationId: dashboardBffHealth
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: Healthy
+  /v1/dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [Dashboard]
+      summary: Platform summary metrics
+      description: Permission dashboard:read. Derives counts from module catalogue and live onboarding data when available.
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+  /v1/dashboard/modules:
+    get:
+      operationId: listDashboardModules
+      tags: [Dashboard]
+      summary: List dashboard modules
+      responses:
+        "200":
+          description: Modules
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/DashboardModule"
+                  counts:
+                    type: object
+                    properties:
+                      business: { type: integer }
+                      platform: { type: integer }
+                      administration: { type: integer }
+  /v1/dashboard/health:
+    get:
+      operationId: getDashboardHealth
+      tags: [Dashboard]
+      summary: Aggregate service health
+      responses:
+        "200":
+          description: Health probe results
+  /v1/dashboard/activity:
+    get:
+      operationId: getDashboardActivity
+      tags: [Dashboard]
+      summary: Recent activity feed
+      responses:
+        "200":
+          description: Activity
+  /v1/dashboard/quick-actions:
+    get:
+      operationId: getDashboardQuickActions
+      tags: [Dashboard]
+      summary: Quick actions for operators
+      responses:
+        "200":
+          description: Quick actions
+  /v1/search/global:
+    get:
+      operationId: globalSearch
+      tags: [Search]
+      summary: Global search across modules
+      parameters:
+        - name: q
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        "200":
+          description: Search results
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    DashboardSummary:
+      type: object
+      properties:
+        platformName: { type: string }
+        environment: { type: string }
+        businessApplicationCount: { type: integer }
+        aiPlatformServiceCount: { type: integer }
+        enterpriseAdministrationCount: { type: integer }
+        activeModuleCount: { type: integer }
+        activeTenants: { type: integer }
+        systemStatus: { type: string }
+        systemStatusMessage: { type: string }
+    DashboardModule:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        category: { type: string, enum: [business, platform, administration] }
+        description: { type: string }
+        modulesCount: { type: integer }
+        featuresCount: { type: integer }
+        status: { type: string, enum: [active, planned, excluded] }
+        port: { type: integer }

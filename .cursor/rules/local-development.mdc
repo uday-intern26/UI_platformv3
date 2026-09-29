@@ -1,0 +1,16 @@
+---
+description: Local Windows development conventions
+globs:
+  - "scripts/**"
+  - "infrastructure/local/**"
+alwaysApply: false
+---
+
+# Local Development
+
+- Windows 11, Python venv per service, pnpm for Node.
+- DynamoDB Local, filesystem/MinIO storage, ChromaDB, local event bus, mock AI.
+- PowerShell scripts: setup-local, start-all, stop-all, restart-service, check-health, run-tests, generate-openapi.
+- Platform must start without AWS credentials.
+- Use `infrastructure/local/ports.yaml` for ports.
+- Activate Python venv: `.\\.venv\\Scripts\\Activate.ps1`

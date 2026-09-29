@@ -1,0 +1,325 @@
+openapi: 3.1.0
+info:
+  title: AIJewel Model Gateway API
+  version: 0.1.0
+  description: |
+    Provider configuration, model routing, chat/vision/embeddings/structured output,
+    fallback routing, quotas and usage metering. Mock provider is default locally —
+    responses include mocked=true. Not real inference until a non-mock adapter is configured.
+servers:
+  - url: http://127.0.0.1:8101
+    description: Local development
+security:
+  - bearerAuth: []
+tags:
+  - name: Inference
+  - name: Gateway
+  - name: Health
+paths:
+  /health:
+    get:
+      operationId: modelGatewayHealth
+      tags: [Health]
+      summary: Health check
+      security: []
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string }
+                  service: { type: string }
+                  provider: { type: string }
+  /v1/inference/chat:
+    post:
+      operationId: inferenceChat
+      tags: [Inference]
+      summary: Chat completion
+      description: Permission inference:chat. Tenant quotas enforced.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: object
+                    required: [role, content]
+                    properties:
+                      role: { type: string }
+                      content: { type: string }
+                model: { type: string, default: jewellery-assistant }
+            example:
+              messages:
+                - role: user
+                  content: Suggest bridal necklace styles
+              model: jewellery-assistant
+      responses:
+        "200":
+          description: Completion (may be mocked)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceResponse"
+  /v1/inference/vision:
+    post:
+      operationId: inferenceVision
+      tags: [Inference]
+      summary: Vision inference
+      description: Permission inference:vision. Does not retain raw camera feeds.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt, imageUrl]
+              properties:
+                prompt: { type: string }
+                imageUrl: { type: string }
+                model: { type: string, default: jewellery-vision }
+      responses:
+        "200":
+          description: Vision result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceResponse"
+  /v1/inference/embeddings:
+    post:
+      operationId: inferenceEmbeddings
+      tags: [Inference]
+      summary: Generate embeddings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [texts]
+              properties:
+                texts:
+                  type: array
+                  items: { type: string }
+                  minItems: 1
+                model: { type: string, default: jewellery-embed }
+      responses:
+        "200":
+          description: Embeddings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  embeddings:
+                    type: array
+                    items:
+                      type: array
+                      items: { type: number }
+                  dimensions: { type: integer }
+                  mocked: { type: boolean }
+  /v1/inference/structured-output:
+    post:
+      operationId: inferenceStructuredOutput
+      tags: [Inference]
+      summary: Structured JSON output
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [prompt, schema]
+              properties:
+                prompt: { type: string }
+                schema: { type: object }
+                model: { type: string }
+      responses:
+        "200":
+          description: Structured result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InferenceResponse"
+  /v1/model-gateway/providers:
+    get:
+      operationId: listModelProviders
+      tags: [Gateway]
+      summary: List providers
+      responses:
+        "200":
+          description: Providers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Provider"
+    post:
+      operationId: createModelProvider
+      tags: [Gateway]
+      summary: Register provider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, type]
+              properties:
+                name: { type: string }
+                type: { type: string, enum: [mock, openai_compatible, bedrock] }
+                baseUrl: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Provider"
+  /v1/model-gateway/routes:
+    get:
+      operationId: listModelRoutes
+      tags: [Gateway]
+      summary: List routes
+      responses:
+        "200":
+          description: Routes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Route"
+    post:
+      operationId: createModelRoute
+      tags: [Gateway]
+      summary: Create route
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [capability, modelAlias, primaryProviderId]
+              properties:
+                capability: { type: string }
+                modelAlias: { type: string }
+                primaryProviderId: { type: string }
+                fallbackProviderId: { type: string }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+  /v1/model-gateway/routes/{routeId}:
+    patch:
+      operationId: patchModelRoute
+      tags: [Gateway]
+      summary: Update route
+      parameters:
+        - name: routeId
+          in: path
+          required: true
+          schema: { type: string }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                enabled: { type: boolean }
+                primaryProviderId: { type: string }
+                fallbackProviderId: { type: string }
+                modelAlias: { type: string }
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Route"
+  /v1/model-gateway/quotas:
+    get:
+      operationId: getModelQuotas
+      tags: [Gateway]
+      summary: Get tenant quotas
+      responses:
+        "200":
+          description: Quotas
+          content:
+            application/json:
+              schema:
+                type: object
+  /v1/model-gateway/usage:
+    get:
+      operationId: getModelUsage
+      tags: [Gateway]
+      summary: Get usage metering
+      responses:
+        "200":
+          description: Usage
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalTokens: { type: integer }
+                  totalCostUsd: { type: number }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    InferenceResponse:
+      type: object
+      properties:
+        provider: { type: string }
+        model: { type: string }
+        modelVersion: { type: string }
+        output: {}
+        usage:
+          type: object
+          properties:
+            promptTokens: { type: integer }
+            completionTokens: { type: integer }
+            totalTokens: { type: integer }
+        costUsd: { type: number }
+        mocked:
+          type: boolean
+          description: True when using mock provider — not real inference.
+    Provider:
+      type: object
+      properties:
+        providerId: { type: string }
+        name: { type: string }
+        type: { type: string }
+        enabled: { type: boolean }
+        baseUrl: { type: string }
+    Route:
+      type: object
+      properties:
+        routeId: { type: string }
+        capability: { type: string }
+        modelAlias: { type: string }
+        primaryProviderId: { type: string }
+        fallbackProviderId: { type: string }
+        enabled: { type: boolean }

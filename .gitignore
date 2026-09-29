@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Build
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.turbo/
+
+# Local data & secrets
+data/dynamodb/*
+data/storage/*
+data/chroma/*
+!data/dynamodb/.gitkeep
+!data/storage/.gitkeep
+!data/chroma/.gitkeep
+logs/*
+!logs/.gitkeep
+.env
+.env.local
+*.pem
+*.key
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# Generated clients (keep stubs, ignore heavy gen if needed)
+packages/frontend-api-client/src/generated/
+*.log
+pids.json

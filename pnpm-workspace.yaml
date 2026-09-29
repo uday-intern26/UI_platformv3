@@ -1,0 +1,12 @@
+packages:
+  - 'packages/*'
+  - 'services/dashboard-bff'
+  - 'services/administration/*'
+  - 'services/platform/prompt-registry'
+  - 'services/platform/workflow-orchestration'
+  - 'services/platform/security-governance'
+  - 'services/platform/observability-evaluation'
+  - 'services/business/virtual-tryon'
+  - 'services/business/inventory-intelligence'
+  - 'services/business/retail-analytics'
+  - 'services/business/pricing-procurement'

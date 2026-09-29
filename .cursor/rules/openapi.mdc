@@ -1,0 +1,19 @@
+---
+description: OpenAPI 3.1 contract standards
+globs:
+  - "contracts/openapi/**/*.yaml"
+  - "contracts/openapi/**/*.yml"
+alwaysApply: false
+---
+
+# OpenAPI
+
+- One OpenAPI 3.1 YAML per microservice under `contracts/openapi/{domain}/`.
+- Every operation: unique operationId, tags, summary, description, auth, permissions,
+  tenant/branch behavior, params, body, examples, success + error schemas.
+- Standard errors: 400, 401, 403, 404, 409, 422, 429, 500, 503.
+- Headers: Authorization, X-Correlation-ID, Idempotency-Key where applicable.
+- Shared schemas in `contracts/openapi/shared/`.
+- Long-running ops return 202 with jobId, status, statusUrl, createdAt.
+- Scripts: contracts:lint, generate, test, breaking.
+- Generate TypeScript clients into `packages/frontend-api-client`.

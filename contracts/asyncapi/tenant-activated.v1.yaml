@@ -1,0 +1,41 @@
+asyncapi: 3.0.0
+info:
+  title: AIJewel Domain Events
+  version: 0.1.0
+  description: Versioned asynchronous domain events for AIJewel platform.
+channels:
+  tenant.activated.v1:
+    address: tenant.activated.v1
+    messages:
+      tenantActivated:
+        $ref: "#/components/messages/TenantActivated"
+components:
+  messages:
+    TenantActivated:
+      name: tenant.activated.v1
+      payload:
+        type: object
+        required:
+          - eventId
+          - eventType
+          - eventVersion
+          - occurredAt
+          - tenantId
+          - correlationId
+          - producer
+          - payload
+        properties:
+          eventId: { type: string }
+          eventType: { type: string, const: tenant.activated.v1 }
+          eventVersion: { type: string }
+          occurredAt: { type: string, format: date-time }
+          tenantId: { type: string }
+          correlationId: { type: string }
+          producer: { type: string }
+          payload:
+            type: object
+            properties:
+              applicationId: { type: string }
+              tenantId: { type: string }
+              planId: { type: string }
+              organizationName: { type: string }
