@@ -20,7 +20,7 @@ foreach ($prop in $pids.PSObject.Properties) {
   }
 }
 
-foreach ($port in 3001, 5003, 8101) {
+foreach ($port in 3000, 3001, 5003, 8101) {
   $conns = Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique
   foreach ($opid in $conns) {

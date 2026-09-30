@@ -22,7 +22,7 @@ if (Test-Path (Join-Path $Root ".env")) {
 }
 
 # Free known ports from a previous partial start
-foreach ($port in 3001, 5003, 8101) {
+foreach ($port in 3000, 3001, 5003, 8101) {
   Get-NetTCPConnection -LocalPort $port -ErrorAction SilentlyContinue |
     Select-Object -ExpandProperty OwningProcess -Unique |
     ForEach-Object {
@@ -70,6 +70,14 @@ Start-LoggedProcess "dashboard-bff" $pnpmCmd @(
 ) $Root | Out-Null
 $started["dashboard-bff"].port = 3001
 
+# Frontend UI (Vite)
+$fe = Join-Path $Root "frontend"
+if (-not (Test-Path (Join-Path $fe "node_modules"))) {
+  throw "frontend dependencies missing. Run .\scripts\setup-local.ps1 first."
+}
+Start-LoggedProcess "frontend" "npm.cmd" @("run", "dev") $fe | Out-Null
+$started["frontend"].port = 3000
+
 ($started | ConvertTo-Json -Depth 4) | Set-Content $pidsFile
 
 Write-Host "Waiting for health checks..."
@@ -77,6 +85,7 @@ Start-Sleep -Seconds 8
 & (Join-Path $PSScriptRoot "check-health.ps1")
 
 Write-Host "`nMilestone-1 services started." -ForegroundColor Green
+Write-Host "  Frontend UI:          http://127.0.0.1:3000/"
 Write-Host "  Dashboard BFF:        http://127.0.0.1:3001/health"
 Write-Host "  Customer Onboarding:  http://127.0.0.1:5003/health"
 Write-Host "  Model Gateway:        http://127.0.0.1:8101/health"

@@ -41,6 +41,15 @@ if (-not (Test-Path $envTarget)) {
 Write-Host "Installing Node workspace dependencies..."
 pnpm install
 
+# Frontend UI (Vite / npm)
+$fe = Join-Path $Root "frontend"
+if (Test-Path (Join-Path $fe "package.json")) {
+  Write-Host "Installing frontend dependencies..."
+  Push-Location $fe
+  npm install
+  Pop-Location
+}
+
 # Shared python package + model-gateway venv
 $gw = Join-Path $Root "services\platform\model-gateway"
 $venv = Join-Path $gw ".venv"

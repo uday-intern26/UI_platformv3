@@ -33,6 +33,7 @@ Services:
 
 | Service | Port | Health |
 |---------|-----:|--------|
+| Frontend UI | 3000 | http://127.0.0.1:3000/ |
 | Dashboard BFF | 3001 | http://127.0.0.1:3001/health |
 | Customer Onboarding | 5003 | http://127.0.0.1:5003/health |
 | Model Gateway | 8101 | http://127.0.0.1:8101/health |
@@ -47,7 +48,8 @@ Invoke-RestMethod -Headers @{ Authorization = "Bearer $TOKEN" } http://127.0.0.1
 
 ## Repository layout
 
-See the specification under `docs/architecture/`. Contracts live in `contracts/openapi`.
+Frontend UI lives in `frontend/` (Vite + React). Backend services live under `services/`.
+Contracts live in `contracts/openapi`.
 Each Python service owns an independent `.venv`. Node services use the pnpm workspace.
 
 ## Implementation status
